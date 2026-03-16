@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: plant4.0-config
+data:
+  VITE_AZURE_SUBDOMAIN: "dqproj"
+  VITE_AZURE_REDIRECT_URI: "http://localhost:3000/dashboard"
+  VITE_AZURE_POST_LOGOUT_R: "http//localhost:3000/"
+  VITE_AZURE_SCOPES: "openid profile offline_access"
+  VITE_IDENTITY_HOST: "dqproj.ciamlogin.com"
+  VITE_MSAL_ENABLE_GRAPH_FALLBACK: "true"
+  VITE_KNOWLEDGEHUB_GRAPHQL_URL: "http://localhost:4000/graphql"
+  VITE_SUPABASE_URL: "https://faqystypjlxqvgkhnbyq.supabase.co"
+  AZURE_STORAGE_ACCOUNT: "kfmediaitems"
+  AZURE_STORAGE_CONTAINER: "mediaitems"

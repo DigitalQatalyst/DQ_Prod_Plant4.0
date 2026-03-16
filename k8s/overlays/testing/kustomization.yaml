@@ -1,0 +1,6 @@
+namespace: plant4-0
+
+resources:
+  - ../../base
+  - deployment.yaml
+  - ingress.yaml

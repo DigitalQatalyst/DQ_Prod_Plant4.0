@@ -1,0 +1,18 @@
+# Supabase
+.branches
+.temp
+
+# dotenvx
+.env.keys
+.env.local
+.env.*.local
+<<<<<<< HEAD
+=======
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+>>>>>>> develop

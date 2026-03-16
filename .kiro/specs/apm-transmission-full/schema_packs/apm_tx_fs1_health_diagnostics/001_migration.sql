@@ -1,0 +1,249 @@
+-- FS1: Asset Health & Diagnostics - Migration Script
+-- This script creates the database schema for health monitoring, diagnostics, and telemetry
+-- Requirements: 6.1-6.10, 7.1-7.10, 8.1-8.8, 9.1-9.9, 10.1-10.6, 11.1-11.6
+--
+-- This migration is idempotent and can be safely executed multiple times.
+
+-- =============================================================================
+-- SUBTASK 14.1: Extend telemetry_parameters table
+-- Requirements: 6.6, 6.7
+-- =============================================================================
+
+-- Create telemetry_parameters table if it doesn't exist (baseline compatibility)
+CREATE TABLE IF NOT EXISTS telemetry_parameters (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  parameter_type TEXT NOT NULL,
+  unit TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Add transmission-specific columns idempotently
+ALTER TABLE telemetry_parameters
+  ADD COLUMN IF NOT EXISTS parameter_role TEXT DEFAULT 'diagnostic',
+  ADD COLUMN IF NOT EXISTS warning_min NUMERIC,
+  ADD COLUMN IF NOT EXISTS warning_max NUMERIC,
+  ADD COLUMN IF NOT EXISTS critical_min NUMERIC,
+  ADD COLUMN IF NOT EXISTS critical_max NUMERIC;
+
+-- Add check constraint for parameter_role values (idempotent)
+DO $
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'chk_parameter_role'
+  ) THEN
+    ALTER TABLE telemetry_parameters
+      ADD CONSTRAINT chk_parameter_role
+      CHECK (parameter_role IN ('health_driver', 'diagnostic', 'context'));
+  END IF;
+END $;
+
+-- Create index on (parameter_type, name) for performance
+CREATE INDEX IF NOT EXISTS idx_telemetry_params_type_name
+  ON telemetry_parameters(parameter_type, name);
+
+-- =============================================================================
+-- SUBTASK 14.2: Create asset_parameter_map table
+-- Requirements: 6.8, 6.9
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS asset_parameter_map (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  asset_type TEXT NOT NULL,
+  parameter_id UUID NOT NULL REFERENCES telemetry_parameters(id) ON DELETE CASCADE,
+  is_required BOOLEAN DEFAULT false,
+  sampling_interval_seconds INTEGER,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT uq_asset_parameter UNIQUE(asset_type, parameter_id)
+);
+
+-- Create index on asset_type for performance
+CREATE INDEX IF NOT EXISTS idx_asset_param_map_type
+  ON asset_parameter_map(asset_type);
+
+-- =============================================================================
+-- SUBTASK 14.3: Ensure telemetry_data hypertable exists
+-- Requirements: 7.1, 28.4
+-- =============================================================================
+
+-- Verify TimescaleDB extension
+CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+-- Create telemetry_data table if it doesn't exist
+CREATE TABLE IF NOT EXISTS telemetry_data (
+  timestamp TIMESTAMPTZ NOT NULL,
+  asset_id UUID NOT NULL,
+  parameter_id UUID NOT NULL REFERENCES telemetry_parameters(id) ON DELETE CASCADE,
+  value NUMERIC NOT NULL,
+  unit TEXT NOT NULL,
+  quality_score NUMERIC,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Convert to hypertable if not already (idempotent)
+-- TimescaleDB will skip if already a hypertable
+DO $
+BEGIN
+  -- Check if table is already a hypertable
+  IF NOT EXISTS (
+    SELECT 1 FROM timescaledb_information.hypertables 
+    WHERE hypertable_name = 'telemetry_data'
+  ) THEN
+    PERFORM create_hypertable('telemetry_data', 'timestamp', if_not_exists => TRUE);
+  END IF;
+END $;
+
+-- Add index on (asset_id, parameter_id, timestamp DESC) for performance
+CREATE INDEX IF NOT EXISTS idx_telemetry_asset_param_time
+  ON telemetry_data(asset_id, parameter_id, timestamp DESC);
+
+-- =============================================================================
+-- SUBTASK 14.4: Create health_models table
+-- Requirements: 8.2, 8.3
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS health_models (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  asset_type TEXT NOT NULL,
+  model_version TEXT NOT NULL,
+  parameter_weights JSONB NOT NULL,
+  computation_method TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT uq_health_model UNIQUE(asset_type, model_version)
+);
+
+-- =============================================================================
+-- SUBTASK 14.5: Create health_scores table
+-- Requirements: 8.1, 8.4, 8.5
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS health_scores (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  asset_id UUID NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
+  score NUMERIC NOT NULL,
+  computed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  model_version TEXT NOT NULL,
+  component_breakdown JSONB,
+  CONSTRAINT uq_health_score_asset_time UNIQUE(asset_id, computed_at)
+);
+
+-- Add check constraint for score bounds (idempotent)
+DO $
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'chk_health_score_bounds'
+  ) THEN
+    ALTER TABLE health_scores
+      ADD CONSTRAINT chk_health_score_bounds
+      CHECK (score >= 0 AND score <= 100);
+  END IF;
+END $;
+
+-- Create index on (asset_id, computed_at DESC) for performance
+CREATE INDEX IF NOT EXISTS idx_health_scores_asset_time
+  ON health_scores(asset_id, computed_at DESC);
+
+-- =============================================================================
+-- SUBTASK 14.6: Create diagnostic_events table
+-- Requirements: 9.1-9.9
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS diagnostic_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  asset_id UUID NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
+  event_type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  confidence NUMERIC NOT NULL,
+  detected_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  state TEXT NOT NULL DEFAULT 'open',
+  acknowledged_by TEXT,
+  acknowledged_at TIMESTAMPTZ,
+  closed_by TEXT,
+  closed_at TIMESTAMPTZ,
+  resolution_notes TEXT,
+  telemetry_window_start TIMESTAMPTZ,
+  telemetry_window_end TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Add check constraints (idempotent)
+DO $
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'chk_diagnostic_event_type'
+  ) THEN
+    ALTER TABLE diagnostic_events
+      ADD CONSTRAINT chk_diagnostic_event_type
+      CHECK (event_type IN ('thermal', 'electrical', 'mechanical', 'insulation', 'comms'));
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'chk_diagnostic_state'
+  ) THEN
+    ALTER TABLE diagnostic_events
+      ADD CONSTRAINT chk_diagnostic_state
+      CHECK (state IN ('open', 'ack', 'closed'));
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'chk_diagnostic_confidence'
+  ) THEN
+    ALTER TABLE diagnostic_events
+      ADD CONSTRAINT chk_diagnostic_confidence
+      CHECK (confidence >= 0 AND confidence <= 100);
+  END IF;
+END $;
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_diagnostic_events_asset
+  ON diagnostic_events(asset_id, detected_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_diagnostic_events_state
+  ON diagnostic_events(state, detected_at DESC);
+
+-- =============================================================================
+-- SUBTASK 14.7: Create rca_records table
+-- Requirements: 10.1-10.6
+-- =============================================================================
+
+-- First, ensure downtime_events table exists (baseline compatibility)
+CREATE TABLE IF NOT EXISTS downtime_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  asset_id UUID NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
+  event_type TEXT NOT NULL,
+  start_time TIMESTAMPTZ NOT NULL,
+  end_time TIMESTAMPTZ,
+  duration_minutes INTEGER,
+  description TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Create rca_records table
+CREATE TABLE IF NOT EXISTS rca_records (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_id UUID NOT NULL,
+  root_cause TEXT NOT NULL,
+  contributing_factors TEXT,
+  corrective_actions TEXT,
+  preventive_actions TEXT,
+  created_by TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Note: event_id can reference either diagnostic_events or downtime_events
+-- We don't enforce a strict FK to allow flexibility, but validation should check existence
+
+-- Create index for RCA queries
+CREATE INDEX IF NOT EXISTS idx_rca_records_event
+  ON rca_records(event_id);
+
+-- =============================================================================
+-- Migration Complete
+-- =============================================================================

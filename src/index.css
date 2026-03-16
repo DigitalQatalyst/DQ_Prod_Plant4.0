@@ -1,0 +1,339 @@
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-sans/700.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode colors */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 172 66% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 199 89% 48%;
+
+    --radius: 0.5rem;
+
+    /* Custom Plant4.0 tokens - Light mode */
+    --menu-pane: 210 40% 98%;
+    --list-pane: 0 0% 100%;
+    --work-pane: 210 40% 96%;
+    --pop-pane: 0 0% 100%;
+
+    --nav-section: 199 89% 48%;
+    --nav-feature-area: 172 66% 50%;
+    --nav-feature-set: 215 20% 35%;
+    --nav-feature: 222 47% 11%;
+
+    --status-online: 142 76% 36%;
+    --status-offline: 0 84% 60%;
+    --status-pending: 38 92% 50%;
+    --status-maintenance: 262 83% 58%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 199 89% 48%;
+  }
+
+  .dark {
+    /* Dark mode colors */
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 10%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 199 89% 48%;
+    --primary-foreground: 222 47% 6%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 14%;
+    --muted-foreground: 215 20% 55%;
+
+    --accent: 172 66% 50%;
+    --accent-foreground: 222 47% 6%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 47% 6%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 98%;
+
+    --border: 217 33% 20%;
+    --input: 217 33% 17%;
+    --ring: 199 89% 48%;
+
+    /* Custom Plant4.0 tokens - Dark mode */
+    --menu-pane: 222 47% 7%;
+    --list-pane: 222 47% 9%;
+    --work-pane: 222 47% 11%;
+    --pop-pane: 222 47% 13%;
+
+    --nav-section: 199 89% 48%;
+    --nav-feature-area: 172 66% 50%;
+    --nav-feature-set: 215 20% 65%;
+    --nav-feature: 210 40% 80%;
+
+    --status-online: 142 76% 36%;
+    --status-offline: 0 84% 60%;
+    --status-pending: 38 92% 50%;
+    --status-maintenance: 262 83% 58%;
+
+    --sidebar-background: 222 47% 7%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 222 47% 6%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 20%;
+    --sidebar-ring: 199 89% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    @apply h-full overflow-hidden;
+  }
+
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+
+  #root {
+    @apply h-full;
+  }
+}
+
+@layer components {
+  .pane {
+    @apply h-full overflow-hidden flex flex-col min-h-0;
+  }
+
+  .pane-header {
+    @apply px-4 py-3 border-b border-border flex items-center justify-between shrink-0;
+  }
+
+  .pane-content {
+    @apply flex-1 overflow-auto min-h-0;
+  }
+
+
+  .bg-pane-list {
+    @apply bg-background;
+  }
+
+  .bg-pane-work {
+    @apply bg-background;
+  }
+
+  .bg-pane-menu {
+    @apply bg-background;
+  }
+
+  .bg-pane-pop {
+    @apply bg-background;
+  }
+
+  .nav-item {
+    @apply px-3 py-2 rounded-md text-sm transition-all duration-200 cursor-pointer;
+  }
+
+  .nav-item-section {
+    @apply text-primary font-semibold text-xs uppercase tracking-wider;
+  }
+
+  .nav-item-feature-set {
+    @apply text-muted-foreground hover:text-foreground hover:bg-secondary/50;
+  }
+
+  .nav-item-feature {
+    @apply text-muted-foreground hover:text-foreground hover:bg-secondary pl-6;
+  }
+
+  .nav-item-active {
+    @apply bg-primary/10 text-primary border-l-2 border-primary;
+  }
+
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .status-online {
+    @apply bg-success/20 text-success;
+  }
+
+  .status-offline {
+    @apply bg-destructive/20 text-destructive;
+  }
+
+  .status-pending {
+    @apply bg-warning/20 text-warning;
+  }
+
+  .status-maintenance {
+    @apply bg-purple-500/20 text-purple-400;
+  }
+
+  .kpi-card {
+    @apply bg-card border border-border rounded-lg p-4 hover:border-primary/50 transition-colors;
+  }
+
+  .kpi-card-pressure {
+    @apply border-blue-500/30 hover:border-blue-500/50;
+  }
+
+  .kpi-card-flow {
+    @apply border-cyan-500/30 hover:border-cyan-500/50;
+  }
+
+  .kpi-card-vibration {
+    @apply border-orange-500/30 hover:border-orange-500/50;
+  }
+
+  /* EMS-specific styling for consistent UI design */
+  .ems-page-header {
+    @apply flex items-center justify-between mb-6;
+  }
+
+  .ems-feature-badge {
+    @apply inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary;
+  }
+
+  .ems-energy-icon {
+    @apply w-4 h-4 shrink-0;
+  }
+
+  .ems-energy-icon-electricity {
+    @apply text-yellow-500;
+  }
+
+  .ems-energy-icon-gas {
+    @apply text-orange-500;
+  }
+
+  .ems-energy-icon-diesel {
+    @apply text-blue-500;
+  }
+
+  .ems-energy-icon-steam {
+    @apply text-gray-500;
+  }
+
+  .ems-list-item {
+    @apply w-full flex items-start gap-3 p-3 rounded-lg text-left transition-all duration-200 border border-transparent hover:bg-secondary/50;
+  }
+
+  .ems-list-item-selected {
+    @apply bg-primary/10 border-primary/30;
+  }
+
+  .ems-list-item-icon {
+    @apply w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-secondary;
+  }
+
+  .ems-list-item-icon-selected {
+    @apply bg-primary/20;
+  }
+
+  .ems-sector-badges {
+    @apply flex items-center gap-2;
+  }
+
+  .ems-work-pane-content {
+    @apply space-y-6;
+  }
+
+  .data-table {
+    @apply w-full text-sm;
+  }
+
+  .data-table th {
+    @apply text-left text-muted-foreground font-medium px-4 py-3 border-b border-border;
+  }
+
+  .data-table td {
+    @apply px-4 py-3 border-b border-border/50;
+  }
+
+  .data-table tr:hover td {
+    @apply bg-secondary/30;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    display: block;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}

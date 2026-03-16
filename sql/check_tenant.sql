@@ -1,0 +1,1 @@
+SELECT id, name, sector FROM tenants WHERE sector = 'power' LIMIT 5;

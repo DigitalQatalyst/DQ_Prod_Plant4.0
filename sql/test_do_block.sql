@@ -1,0 +1,6 @@
+﻿BEGIN;
+DO $$
+BEGIN
+  RAISE NOTICE 'Test';
+END $$;
+COMMIT;

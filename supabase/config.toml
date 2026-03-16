@@ -1,0 +1,275 @@
+# For detailed configuration reference documentation, visit:
+# https://supabase.com/docs/guides/local-development/cli/config
+# A string used to distinguish different Supabase projects on the same host. Defaults to the
+# working directory name when running `supabase init`.
+project_id = "DQ_Prod_Plant4.0_Skunk"
+
+[api]
+enabled = true
+port = 8000
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[api.tls]
+enabled = false
+
+[db]
+port = 54322
+shadow_port = 54323
+health_timeout = "5m"
+major_version = 17
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[db.migrations]
+enabled = true
+schema_paths = []
+
+[db.seed]
+enabled = true
+# Specifies an ordered list of seed files to load during db reset.
+sql_paths = [
+  "seed_sources/001_transmission_tenant.sql",
+  "seed_sources/002_grid_topology.sql",
+  "seed_sources/003_assets.sql",
+  "seed_sources/004_telemetry_alerts.sql",
+  "seed_sources/005_operational.sql",
+  "seed_sources/006_grid_asset_links.sql",
+  "seed_sources/007_property_sets.sql",
+  "seed_sources/008_lifecycle_states.sql",
+  "seed_sources/009_discovery_data.sql",
+  "seed_sources/010_linear_asset_issues.sql",
+  "seed_sources/011_connectivity_data.sql",
+  "seed_sources/012_seed_security_users.sql",
+  "seed_sources/013_seed_access_policies.sql",
+  "seed_sources/014_seed_secrets_certificates.sql",
+  "seed_sources/015_016_017_seed_security_infrastructure.sql",
+  "seed_sources/018_019_seed_remote_access_network_exposure.sql",
+  "seed_sources/023_seed_security_assessments.sql",
+  "seed_sources/024_seed_security_alerts.sql",
+  "seed_sources/030_seed_transmission_compliance_standards.sql",
+  "seed_sources/031_seed_incident_cases.sql",
+  "seed_sources/031_seed_transmission_security_risks.sql",
+  "seed_sources/032_seed_anomaly_detection.sql",
+  "seed_sources/032_seed_transmission_security_controls.sql",
+  "seed_sources/033_seed_response_playbooks.sql",
+  "seed_sources/033_seed_transmission_security_policies.sql",
+  "seed_sources/034_seed_threat_intelligence.sql",
+  "seed_sources/034_seed_transmission_security_exceptions.sql",
+  "seed_sources/035_seed_impact_assessments.sql",
+  "seed_sources/036_seed_soar_actions.sql",
+  "seed_sources/036_seed_audit_logging.sql",
+  "seed_sources/037_seed_log_retention.sql",
+  "seed_sources/038_seed_file_integrity.sql",
+  "seed_sources/039_seed_forensic_snapshots.sql",
+  "seed_sources/040_seed_data_protection_framework.sql",
+  "seed_sources/041_seed_encryption_key_management.sql",
+  "seed_sources/042_seed_backup_recovery.sql",
+  "seed_sources/043_seed_workload_security.sql",
+  "seed_sources/044_seed_application_security.sql",
+  "seed_sources/046_seed_field_gateways.sql",
+  "seed_sources/047_seed_iot_devices.sql",
+  "seed_sources/048_seed_missing_security_data.sql",
+  "seed_sources/049_seed_diverse_posture_data.sql",
+  "seed_sources/049_seed_protocol_policies.sql",
+  "seed_sources/050_seed_comprehensive_security_data.sql",
+  "seed_sources/051_seed_diversified_security_data.sql",
+  "seed_sources/053_seed_expanded_security_data.sql",
+  "seed_sources/054_seed_compliance_evidence.sql",
+  "seed_sources/055_seed_expanded_logging_platform.sql",
+  "seed_sources/056_seed_expanded_appsec_encryption.sql",
+  "seed_sources/060_seed_unified_security_posture.sql",
+  "seed_sources/007_energy_tx_foundation.sql",
+  "seed_sources/008_energy_monitoring_tx.sql",
+  "seed_sources/009_energy_analytics_tx.sql",
+  "seed_sources/010_energy_control_tx.sql",
+  "seed_sources/011_energy_sustainability_tx.sql",
+  "seed_sources/12_energy_dashboards_tx.sql",
+  "seed_sources/2702_seed_energy_alerts_tx.sql",
+  "seed_sources/090_settings_tenant_profile.sql",
+  "seed_sources/091_settings_hierarchy_scope.sql",
+  "seed_sources/015_settings_users_teams.sql",
+  "seed_sources/093_settings_integrations.sql",
+  "seed_sources/094_settings_defaults_modules.sql",
+  "seed_sources/095_settings_user_prefs.sql",
+  "seed_sources/091_seed_dewa_alerts.sql",
+  "seed_sources/080_overview_dashboards.sql",
+  "seed_sources/081_overview_widgets.sql",
+  "seed_sources/082_overview_exceptions.sql",
+  "seed_sources/084_overview_platform_health.sql",
+  "seed_sources/085_overview_work_notifications.sql",
+  "seed_sources/086_overview_advisor_cards.sql",
+  "seed_sources/096_performance_data_simple.sql",
+  "seed_sources/097_sim_seed.sql",
+  "seed_sources/098_ci_seed.sql",
+  "seed_sources/099_optimisation_seed.sql",
+  "seed_sources/100_ci_reports_seed.sql",
+  "seed_sources/101_shift_performance_seed.sql",
+  "seed_sources/007_apm_fs4_seed.sql",
+  "seed_sources/008_apm_fs1_seed.sql",
+  "seed_sources/009_apm_fs3_seed.sql",
+  "seed_sources/010_apm_fs2_seed.sql",
+  "seed_sources/011_apm_fs5_seed.sql",
+  "seed_sources/102_pa_tag_mappings.sql",
+  "seed_sources/103_pa_control_models.sql",
+  "seed_sources/104_pa_action_bindings.sql",
+  "seed_sources/105_pa_triggers.sql",
+  "seed_sources/106_pa_alarm_rules.sql",
+  "seed_sources/107_pa_event_patterns.sql",
+  "seed_sources/108_pa_workflows.sql",
+  "seed_sources/109_pa_sequences.sql",
+  "seed_sources/110_pa_control_rules.sql",
+  "seed_sources/111_pa_versions.sql",
+  "seed_sources/112_pa_approvals.sql",
+  "seed_sources/113_pa_simulations.sql",
+  "seed_sources/114_pa_audit_logs.sql",
+  "seed_sources/115_pa_automation_alerts.sql"
+]
+
+[db.network_restrictions]
+enabled = false
+allowed_cidrs = ["0.0.0.0/0"]
+allowed_cidrs_v6 = ["::/0"]
+
+[realtime]
+enabled = true
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1"
+openai_api_key = "env(OPENAI_API_KEY)"
+
+[inbucket]
+enabled = true
+port = 54324
+smtp_port = 54325
+pop3_port = 54326
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[storage.s3_protocol]
+enabled = true
+
+[storage.analytics]
+enabled = false
+max_namespaces = 5
+max_tables = 10
+max_catalogs = 2
+
+[storage.vector]
+enabled = false
+max_buckets = 10
+max_indexes = 5
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:5173"
+additional_redirect_urls = ["https://127.0.0.1:5173"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+minimum_password_length = 6
+password_requirements = ""
+
+[auth.rate_limit]
+email_sent = 2
+sms_sent = 30
+anonymous_users = 30
+token_refresh = 150
+sign_in_sign_ups = 30
+token_verifications = 30
+web3 = 30
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+secure_password_change = false
+max_frequency = "1s"
+otp_length = 6
+otp_expiry = 3600
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+template = "Your code is {{ .Code }}"
+max_frequency = "5s"
+
+[auth.sms.twilio]
+enabled = false
+account_sid = ""
+message_service_sid = ""
+auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
+
+[auth.mfa]
+max_enrolled_factors = 10
+
+[auth.mfa.totp]
+enroll_enabled = false
+verify_enabled = false
+
+[auth.mfa.phone]
+enroll_enabled = false
+verify_enabled = false
+otp_length = 6
+template = "Your code is {{ .Code }}"
+max_frequency = "5s"
+
+[auth.external.apple]
+enabled = false
+client_id = ""
+secret = "env(SUPABASE_AUTH_EXTERNAL_APPLE_SECRET)"
+redirect_uri = ""
+url = ""
+skip_nonce_check = false
+email_optional = false
+
+[auth.web3.solana]
+enabled = false
+
+[auth.third_party.firebase]
+enabled = false
+
+[auth.third_party.auth0]
+enabled = false
+
+[auth.third_party.aws_cognito]
+enabled = false
+
+[auth.third_party.clerk]
+enabled = false
+
+[auth.oauth_server]
+enabled = false
+authorization_url_path = "/oauth/consent"
+allow_dynamic_registration = false
+
+[edge_runtime]
+enabled = true
+policy = "per_worker"
+inspector_port = 8083
+deno_version = 2
+
+[analytics]
+enabled = false
+port = 54327
+backend = "postgres"
+
+[experimental]
+orioledb_version = ""
+s3_host = "env(S3_HOST)"
+s3_region = "env(S3_REGION)"
+s3_access_key = "env(S3_ACCESS_KEY)"
+s3_secret_key = "env(S3_SECRET_KEY)"

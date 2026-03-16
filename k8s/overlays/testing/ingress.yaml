@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: plant4.0-ingress
+  namespace: plant4-0
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod   # 🔹 Reference staging ClusterIssuer
+spec:
+  tls:
+  - hosts:
+    - plant40.digitalqatalyst.com   # 🔹 Replace with your domain
+    secretName: plant4.0-tls # 🔹 Secret will be created automatically
+  rules:
+  - host: plant40.digitalqatalyst.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: plant40-service
+            port:
+              number: 80
+      

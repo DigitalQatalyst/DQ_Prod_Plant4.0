@@ -1,0 +1,115 @@
+name: Branch Protection Rules
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+jobs:
+  # Rule 1: Block direct pushes to main and develop
+  block-direct-push:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reject direct push to main or develop
+        run: |
+          echo "::error::❌ Direct pushes to main or develop are BLOCKED!"
+          echo "::error::Create a feature branch and open a Pull Request instead."
+          echo "::error::Example: git checkout -b feature/your-feature"
+          exit 1
+
+  # Rule 2: Enforce branch naming convention on PRs
+  check-branch-name:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch name
+        run: |
+          branch="${{ github.head_ref }}"
+          if [[ ! $branch =~ ^(feature|bugfix|hotfix|release)/.+ ]]; then
+            echo "::error::Invalid branch name: $branch"
+            echo "::error::Must start with: feature/, bugfix/, hotfix/, or release/"
+            echo "::error::Example: feature/add-login or bugfix/fix-crash"
+            exit 1
+          fi
+          echo "✅ Branch name is valid: $branch"
+
+  # Rule 3: Run tests (required for PR merge)
+  run-tests:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup environment
+        run: |
+          # Add your setup commands here
+          # npm ci
+          # pip install -r requirements.txt
+          # go mod download
+          echo "Setting up environment..."
+      - name: Run tests
+        run: |
+          # Add your test commands here
+          npm run lint
+          # pytest
+          # go test ./...
+          echo "Running tests..."
+          exit 1  # Uncomment to simulate test failure
+      - name: Run linting
+        run: |
+          # Add your linting commands here
+          # npm run lint
+          # flake8
+          # golangci-lint run
+          echo "Running linting..."
+
+  # Rule 4: Check for required reviewers
+  check-reviewers:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify PR has reviewers
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const reviews = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number
+            });
+            const approvals = reviews.data.filter(r => r.state === 'APPROVED');
+            if (approvals.length === 0) {
+              core.setFailed('❌ At least 1 approval is required before merging!');
+            } else {
+              console.log(`✅ PR has ${approvals.length} approval(s)`);
+            }
+
+  # Rule 5: Add reminder comment on new PRs
+  pr-reminder:
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post reminder comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ⚠️ Branch Protection Reminder
+              
+              **Before merging this PR:**
+              - [ ] All CI checks must pass ✅
+              - [ ] At least 1 approval required 👍
+              - [ ] No merge conflicts 🔀
+              - [ ] Tests are passing 🧪
+              
+              **Do NOT merge your own PR without review!**
+
+              Reviewers: @DigitalQatalyst`
+            })
